@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wave Pack Analyzer — V1.2</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <!-- Background Honeycomb -->
+  <div class="honeycomb-bg"></div>
+
+  <div class="screen">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="title">WAVE PACK ANALYZER — V1.2</div>
+      <div class="controls">
+        <!-- Unit toggle switch -->
+        <label class="switch">
+          <input type="checkbox" id="unitToggle">
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Imperial / SI</span>
+
+        <!-- Generate PDF button -->
+        <button id="exportBtn">Generate Report (PDF)</button>
+      </div>
+    </header>
+
+    <!-- Tabs: Inputs / Outputs -->
+    <main class="tabs">
+      <input type="radio" id="tab1" name="tab" checked>
+      <label for="tab1">Inputs</label>
+      <input type="radio" id="tab2" name="tab">
+      <label for="tab2">Outputs</label>
+
+      <!-- ======================== INPUT TAB ======================== -->
+      <section class="tab-content" id="inputs">
+        <div class="grid2">
+          <!-- Left Column: Input controls -->
+          <div class="panel">
+            <div class="panel-title">Input Parameters</div>
+
+            <!-- Geometry -->
+            <div class="field">
+              <label>Shape</label>
+              <select id="shape">
+                <option value="square">Square</option>
+                <option value="rectangle">Rectangle</option>
+              </select>
+            </div>
+
+            <div class="field two">
+              <div>
+                <label>Side A (in)</label>
+                <input type="number" id="a_in" value="2.0" step="0.01" min="0.01">
+              </div>
+              <div id="sideBwrap">
+                <label>Side B (in)</label>
+                <input type="number" id="b_in" value="2.0" step="0.01" min="0.01">
+              </div>
+            </div>
+
+            <div class="field two">
+              <div>
+                <label>Wall thickness (in)</label>
+                <input type="number" id="t_in" value="0.125" step="0.001" min="0">
+              </div>
+              <div>
+                <label>Length (ft)</label>
+                <input type="number" id="L_ft" value="3.0" step="0.1" min="0.1">
+              </div>
+            </div>
+
+            <!-- Flow and Temperature -->
+            <div class="field two">
+              <div>
+                <label>Flow rate (CFM total)</label>
+                <input type="number" id="cfm" value="100" step="0.1" min="0">
+              </div>
+              <div>
+                <label>Max Temperature (°F)</label>
+                <input type="number" id="Tmax_F" value="100" step="1">
+              </div>
+            </div>
+
+            <div class="field two">
+              <div>
+                <label>Target Velocity (ft/s)</label>
+                <input type="number" id="v_target" value="200" step="1" min="0">
+              </div>
+              <div>
+                <label>Max ΔP (psi)</label>
+                <input type="number" id="dP_max" value="1.0" step="0.01" min="0">
+              </div>
+            </div>
+
+            <!-- Material and Fluid -->
+            <div class="field two">
+              <div>
+                <label>Material</label>
+                <select id="material">
+                  {% for k, m in materials.items() %}
+                    <option value="{{k}}">{{m.name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label>Fluid</label>
+                <select id="fluid">
+                  {% for k, f in fluids.items() %}
+                    <option value="{{k}}">{{f.name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Schematic -->
+          <div class="panel">
+            <div class="panel-title">Wave Pack Visualization</div>
+            <div class="schematic-wrap">
+              <svg id="schematic" viewBox="0 0 600 400">
+                <!-- Tube array dynamically drawn here by JS -->
+                <g id="tubeArray"></g>
+                <text id="meta" x="20" y="370" fill="#fff" font-size="12" font-family="Segoe UI"></text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================== OUTPUT TAB ======================== -->
+      <section class="tab-content" id="outputs">
+        <!-- Summary results -->
+        <div class="panel">
+          <div class="panel-title">Summary</div>
+          <div class="cards">
+            <div class="card"><div>Tube Count</div><b id="c_tubes">—</b></div>
+            <div class="card"><div>Velocity [ft/s]</div><b id="c_v">—</b></div>
+            <div class="card"><div>ΔP [psi]</div><b id="c_dp">—</b></div>
+            <div class="card"><div>Weight [lbm]</div><b id="c_w">—</b></div>
+            <div class="card"><div>Cutoff fc [GHz]</div><b id="c_fc">—</b></div>
+          </div>
+        </div>
+
+        <!-- Two Charts -->
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-title">Pressure / Velocity vs Temperature</div>
+            <canvas id="chartPT"></canvas>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Attenuation vs Frequency</div>
+            <canvas id="chartAF"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Script reference -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
